@@ -293,6 +293,10 @@ class url_finder {
      */
     protected function check_domain_availability($url) {
         $curl = new \curl();
+        $curl->setopt([
+            'CURLOPT_TIMEOUT' => 3, // Max execution time of 3 secs.
+            'CURLOPT_CONNECTTIMEOUT' => 3] // Max connection time of 3 secs.
+        );
         $curl->head($url);
         $info = $curl->get_info();
         return !empty($info['http_code']) && $info['http_code'] == 200;
