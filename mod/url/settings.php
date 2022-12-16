@@ -51,6 +51,8 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configmultiselect('url/displayoptions',
         get_string('displayoptions', 'url'), get_string('configdisplayoptions', 'url'),
         $defaultdisplayoptions, $displayoptions));
+    $settings->add(new admin_setting_configcheckbox('url/userprofilefields',
+        get_string('userprofilefields', 'url'), get_string('configuserprofilefields', 'url'), false));
 
     //--- modedit defaults -----------------------------------------------------------------------------------
     $settings->add(new admin_setting_heading('urlmodeditdefaults', get_string('modeditdefaults', 'admin'), get_string('condifmodeditdefaults', 'admin')));

@@ -379,7 +379,7 @@ function url_get_final_display_type($url) {
  * @return array array describing opt groups
  */
 function url_get_variable_options($config) {
-    global $CFG;
+    global $CFG, $USER;
 
     $options = array();
     $options[''] = array('' => get_string('chooseavariable', 'url'));
@@ -391,6 +391,7 @@ function url_get_variable_options($config) {
         'courseidnumber'  => get_string('idnumbercourse'),
         'coursesummary'   => get_string('summary'),
         'courseformat'    => get_string('format'),
+        'groupnames'      => get_string('groupnames', 'url'),
     );
 
     $options[get_string('modulename', 'url')] = array(
@@ -427,13 +428,35 @@ function url_get_variable_options($config) {
         'usertimezone'    => get_string('timezone'),
     );
 
-    if ($config->rolesinparams) {
+    if (!empty($config->rolesinparams)) {
         $roles = role_fix_names(get_all_roles());
         $roleoptions = array();
         foreach ($roles as $role) {
             $roleoptions['course'.$role->shortname] = get_string('yourwordforx', '', $role->localname);
         }
         $options[get_string('roles')] = $roleoptions;
+    }
+
+    if (!empty($config->userprofilefields)) {
+        $fields = profile_get_user_fields_with_data($USER->id);
+        // Available profile field types to add as parameters.
+        $availabletypes = [
+            'checkbox' => true,
+            'menu'     => true,
+            'datetime' => true,
+            'social'   => true,
+            'text'     => true,
+        ];
+        foreach ($fields as $field) {
+            if (empty($availabletypes[$field->field->datatype])) {
+                continue;
+            }
+            $userfieldoptions['user_profile_' . $field->field->shortname] = $field->field->name;
+        }
+
+        if (!empty($userfieldoptions)) {
+            $options[get_string('profilefields', 'admin')] = $userfieldoptions;
+        }
     }
 
     return $options;
@@ -487,6 +510,16 @@ function url_get_variable_values($url, $cm, $course, $config) {
         $values['usercity']        = $USER->city;
         $now = new DateTime('now', core_date::get_user_timezone_object());
         $values['usertimezone']    = $now->getOffset() / 3600.0; // Value in hours for BC.
+        $values['groupnames']      = implode(',', array_map(function ($groupid) {
+            return groups_get_group_name($groupid);
+        }, groups_get_user_groups($course->id, $USER->id)[0]));
+
+        if (!empty($config->userprofilefields)) {
+            $fields = profile_get_user_fields_with_data($USER->id);
+            foreach ($fields as $field) {
+                $values['user_profile_' . $field->field->shortname] = $field->data;
+            }
+        }
     }
 
     // weak imitation of Single-Sign-On, for backwards compatibility only
@@ -497,7 +530,7 @@ function url_get_variable_values($url, $cm, $course, $config) {
     }
 
     //hmm, this is pretty fragile and slow, why do we need it here??
-    if ($config->rolesinparams) {
+    if (!empty($config->rolesinparams)) {
         $coursecontext = context_course::instance($course->id);
         $roles = role_fix_names(get_all_roles($coursecontext), $coursecontext, ROLENAME_ALIAS);
         foreach ($roles as $role) {
