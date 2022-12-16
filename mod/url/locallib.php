@@ -121,9 +121,21 @@ function url_get_full_url($url, $cm, $course, $config=null) {
         }
         $paramvalues = url_get_variable_values($url, $cm, $course, $config);
 
-        foreach ($parameters as $parse=>$parameter) {
+        foreach ($parameters as $parse => $parameter) {
             if (isset($paramvalues[$parameter])) {
-                $parameters[$parse] = rawurlencode($parse).'='.rawurlencode($paramvalues[$parameter]);
+                if (is_array($paramvalues[$parameter])) {
+                    $arrayparams   = [];
+                    $arrayparamkey = rawurlencode($parse) . '[]';
+                    foreach ($paramvalues[$parameter] as $subparamval) {
+                        if (!empty($arrayparamsstr)) {
+                            $arrayparamsstr .= '&';
+                        }
+                        $arrayparams[] = $arrayparamkey. '=' . rawurlencode($subparamval);
+                    }
+                    $parameters[$parse] = implode('&', $arrayparams);
+                } else {
+                    $parameters[$parse] = rawurlencode($parse).'='.rawurlencode($paramvalues[$parameter]);
+                }
             } else {
                 unset($parameters[$parse]);
             }
@@ -379,7 +391,7 @@ function url_get_final_display_type($url) {
  * @return array array describing opt groups
  */
 function url_get_variable_options($config) {
-    global $CFG;
+    global $USER;
 
     $options = array();
     $options[''] = array('' => get_string('chooseavariable', 'url'));
@@ -391,6 +403,7 @@ function url_get_variable_options($config) {
         'courseidnumber'  => get_string('idnumbercourse'),
         'coursesummary'   => get_string('summary'),
         'courseformat'    => get_string('format'),
+        'groupnames'      => get_string('groupnames', 'url'),
     );
 
     $options[get_string('modulename', 'url')] = array(
@@ -434,6 +447,23 @@ function url_get_variable_options($config) {
             $roleoptions['course'.$role->shortname] = get_string('yourwordforx', '', $role->localname);
         }
         $options[get_string('roles')] = $roleoptions;
+    }
+
+    if ($config->userprofilefields) {
+        $fields = profile_get_user_fields_with_data(0);
+        // Available profile field types to add as parameters.
+        $availabletypes = url_get_available_user_profile_fields();
+        $userfieldoptions = [];
+        foreach ($fields as $field) {
+            if (empty($availabletypes[$field->field->datatype])) {
+                continue;
+            }
+            $userfieldoptions['user_profile_' . $field->field->shortname] = $field->field->name;
+        }
+
+        if (!empty($userfieldoptions)) {
+            $options[get_string('profilefields', 'admin')] = $userfieldoptions;
+        }
     }
 
     return $options;
@@ -487,6 +517,20 @@ function url_get_variable_values($url, $cm, $course, $config) {
         $values['usercity']        = $USER->city;
         $now = new DateTime('now', core_date::get_user_timezone_object());
         $values['usertimezone']    = $now->getOffset() / 3600.0; // Value in hours for BC.
+        $values['groupnames']      = [];
+        foreach (groups_get_user_groups($course->id, $USER->id)[0] as $groupid) {
+            $values['groupnames'][] = groups_get_group_name($groupid);
+        }
+
+        if (!empty($config->userprofilefields)) {
+            $fields = profile_get_user_fields_with_data($USER->id);
+            foreach ($fields as $field) {
+                if (!$field->is_visible()) {
+                    continue;
+                }
+                $values['user_profile_' . $field->field->shortname] = $field->data;
+            }
+        }
     }
 
     // weak imitation of Single-Sign-On, for backwards compatibility only
@@ -563,4 +607,18 @@ function url_guess_icon($fullurl, $size = null) {
     }
 
     return $icon;
+}
+
+/**
+ * Returns an index of enabled user profile fields available for URL param inclusion.
+ * @return array<bool>
+ */
+function url_get_available_user_profile_fields() {
+    static $availabletypes = [
+        'checkbox' => true,
+        'menu'     => true,
+        'datetime' => true,
+        'text'     => true,
+    ];
+    return $availabletypes;
 }

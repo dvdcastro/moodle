@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot . '/mod/url/locallib.php');
+require_once($CFG->dirroot . '/user/profile/definelib.php');
+
 if ($ADMIN->fulltree) {
     require_once("$CFG->libdir/resourcelib.php");
 
@@ -51,6 +54,8 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configmultiselect('url/displayoptions',
         get_string('displayoptions', 'url'), get_string('configdisplayoptions', 'url'),
         $defaultdisplayoptions, $displayoptions));
+    $settings->add(new admin_setting_configcheckbox('url/userprofilefields',
+        get_string('userprofilefieldsasurl', 'url'), get_string('userprofilefieldsasurl_desc', 'url'), false));
 
     //--- modedit defaults -----------------------------------------------------------------------------------
     $settings->add(new admin_setting_heading('urlmodeditdefaults', get_string('modeditdefaults', 'admin'), get_string('condifmodeditdefaults', 'admin')));
