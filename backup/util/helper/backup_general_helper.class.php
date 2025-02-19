@@ -47,10 +47,12 @@ abstract class backup_general_helper extends backup_helper {
         foreach ($arr as $key => $value) {
             if ($value instanceof checksumable) {
                 $checksum = md5($checksum . '-' . $key . '-' . $value->calculate_checksum());
-            } else if (is_object($value)) {
+            } else if ($value instanceof \stdClass) {
                 $checksum = md5($checksum . '-' . $key . '-' . self::array_checksum_recursive((array)$value));
             } else if (is_array($value)) {
                 $checksum = md5($checksum . '-' . $key . '-' . self::array_checksum_recursive($value));
+            } else if (is_object($value)) {
+                $checksum = md5($checksum . '-' . $key . '-' . $value::class);
             } else {
                 $checksum = md5($checksum . '-' . $key . '-' . $value);
             }
