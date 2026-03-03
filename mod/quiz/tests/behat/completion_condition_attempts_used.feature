@@ -63,3 +63,29 @@ Feature: Set a quiz to be marked complete when the student uses all attempts all
       | answer | passcompletionexpected | expectedactivitycompletion                 |
       | False  | failed                 | Completed (did not achieve pass grade)     |
       | True   | done                   | Completed (achieved pass grade)            |
+
+  # MDL-79631: When quiz has pass-or-exhaust and student exhausts without passing,
+  # availability condition "must be marked complete" should pass (Page becomes accessible).
+  @javascript
+  Scenario: Activity with completion restriction unlocks when quiz complete via exhausted attempts
+    Given the following "activities" exist:
+      | activity | name           | course | idnumber | section |
+      | page     | Restricted page| C1     | page1    | 1       |
+    And I am on the "Restricted page" "page activity editing" page logged in as "teacher1"
+    And I expand all fieldsets
+    And I click on "Add restriction..." "button"
+    And I click on "Activity completion" "button" in the "Add restriction..." "dialogue"
+    And I click on ".availability-item .availability-eye img" "css_element"
+    And I set the field "Activity or resource" to "Test quiz name"
+    And I set the field "Required completion status" to "must be marked complete"
+    And I press "Save and return to course"
+    When I am on the "Course 1" course page logged in as student1
+    Then I should not see "Restricted page" in the "region-main" "region"
+    And I follow "Test quiz name"
+    And I press "Re-attempt quiz"
+    And I set the field "False" to "1"
+    And I press "Finish attempt ..."
+    And I press "Submit all and finish"
+    And I click on "Submit all and finish" "button" in the "Submit all your answers and finish?" "dialogue"
+    And I am on "Course 1" course homepage
+    Then I should see "Restricted page" in the "region-main" "region"
