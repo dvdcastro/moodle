@@ -2,7 +2,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname']      = 'Titus Content Library';
-$string['privacy:metadata'] = 'The Titus Content Library plugin does not store personal data. It stores course import metadata (course IDs, SCORM module IDs) that relate to Moodle courses, not to individual users.';
+$string['privacy:metadata:db:added'] = 'Records of Titus content items added to Moodle.';
+$string['privacy:metadata:db:added:userid'] = 'The ID of the user who added the content.';
+$string['privacy:metadata:db:added:contentid'] = 'The Titus content identifier.';
+$string['privacy:metadata:db:added:courseid'] = 'The Moodle course created for the content.';
+$string['privacy:metadata:db:added:timecreated'] = 'When the content was added.';
+$string['privacy:metadata:external:titus'] = 'The Titus Learning API receives the licence key and content ID when downloading SCORM packages.';
+$string['privacy:metadata:external:titus:licencekey'] = 'The licence key identifying the Moodle site.';
+$string['privacy:metadata:external:titus:contentid'] = 'The content identifier being requested.';
 $string['manageintegration'] = 'Manage Titus integration';
 $string['addcontent']      = 'Add content from Titus';
 $string['catalogue']       = 'Titus Content Catalogue';
