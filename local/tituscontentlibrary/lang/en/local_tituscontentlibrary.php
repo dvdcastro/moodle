@@ -30,3 +30,12 @@ $string['defaultcategoryid_desc'] = 'Category where courses imported from Titus 
 $string['cachettl'] = 'Catalogue cache lifetime';
 $string['cachettl_desc'] = 'How long to cache the catalogue before re-fetching from the Titus API.';
 $string['scormrequired'] = 'Warning: The mod_scorm activity module is required but currently disabled. Enable it before using this plugin.';
+
+// API error strings.
+$string['error:apifailure']    = 'Titus API request failed: {$a}';
+$string['error:apiauthfailed'] = 'Titus API authentication failed. Check your licence key.';
+$string['error:apinotfound']   = 'Titus content not found: {$a}';
+$string['error:apiratelimit']  = 'Titus API rate limit exceeded. Retry after {$a} seconds.';
+$string['error:apiserver']     = 'Titus API server error: {$a}';
+$string['error:apisecurity']   = 'Download URL security check failed: {$a}';
+$string['error:apinetwork']    = 'Titus API network error: {$a}';
