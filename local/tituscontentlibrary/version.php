@@ -2,7 +2,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_tituscontentlibrary';
-$plugin->version   = 2026010100;
+$plugin->version   = 2026010101;
 $plugin->requires  = 2024100700;
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1.0';
