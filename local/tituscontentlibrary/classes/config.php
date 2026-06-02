@@ -59,7 +59,19 @@ class config {
      * @return int Cache TTL (defaults to 3600 if not set).
      */
     public static function get_cache_ttl(): int {
-        return (int) get_config('local_tituscontentlibrary', 'cachettl') ?: 3600;
+        // Note: 0 is a valid value ("no cache"), so fall back to the default only
+        // when the setting is genuinely unset — not when it is the falsy value 0.
+        $val = get_config('local_tituscontentlibrary', 'cachettl');
+        return ($val !== false && $val !== '') ? (int) $val : 3600;
+    }
+
+    /**
+     * Returns the number of content tiles to display per page in the marketplace.
+     *
+     * @return int Tiles per page (defaults to 12 if not set).
+     */
+    public static function get_tiles_per_page(): int {
+        return (int) get_config('local_tituscontentlibrary', 'tilesperpage') ?: 12;
     }
 
     /**
@@ -69,5 +81,21 @@ class config {
      */
     public static function get_default_category_id(): int {
         return (int) get_config('local_tituscontentlibrary', 'defaultcategoryid') ?: 1;
+    }
+
+    /** Add mode: background adhoc task (default). */
+    const ADDMODE_ASYNC = 'async';
+
+    /** Add mode: synchronous — blocks the web request until the course is created. */
+    const ADDMODE_SYNC = 'sync';
+
+    /**
+     * Returns the configured add mode ('async' or 'sync'). Defaults to async.
+     *
+     * @return string One of the ADDMODE_* constants.
+     */
+    public static function get_add_mode(): string {
+        $v = get_config('local_tituscontentlibrary', 'addmode');
+        return $v === self::ADDMODE_SYNC ? self::ADDMODE_SYNC : self::ADDMODE_ASYNC;
     }
 }

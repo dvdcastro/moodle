@@ -23,6 +23,13 @@ if ($hassiteconfig) {
     );
     $ADMIN->add('localplugins', $settings);
 
+    // API Health indicator.
+    $settings->add(new admin_setting_heading(
+        'local_tituscontentlibrary/monitorheading',
+        get_string('monitor:heading', 'local_tituscontentlibrary'),
+        \local_tituscontentlibrary\local\monitoring::render_indicator()
+    ));
+
     // Heading.
     $settings->add(new admin_setting_heading(
         'local_tituscontentlibrary/settingsheading',
@@ -53,8 +60,8 @@ if ($hassiteconfig) {
         PARAM_URL
     ));
 
-    // 2. Licence key (stored encrypted).
-    $licencekeysetting = new admin_setting_encryptedpassword(
+    // 2. Licence key (stored encrypted, required — must not be empty on first save).
+    $licencekeysetting = new \local_tituscontentlibrary\admin\setting_encryptedpassword_required(
         'local_tituscontentlibrary/licencekey',
         get_string('licencekey', 'local_tituscontentlibrary'),
         get_string('licencekey_desc', 'local_tituscontentlibrary')
@@ -76,5 +83,35 @@ if ($hassiteconfig) {
         get_string('cachettl', 'local_tituscontentlibrary'),
         get_string('cachettl_desc', 'local_tituscontentlibrary'),
         3600
+    ));
+
+    // 5. Tiles per page (marketplace pagination).
+    $settings->add(new admin_setting_configselect(
+        'local_tituscontentlibrary/tilesperpage',
+        get_string('tilesperpage', 'local_tituscontentlibrary'),
+        get_string('tilesperpage_desc', 'local_tituscontentlibrary'),
+        '12',
+        ['6' => '6', '12' => '12', '24' => '24', '48' => '48']
+    ));
+
+    // 6. Add mode: sync vs async course creation.
+    $settings->add(new admin_setting_configselect(
+        'local_tituscontentlibrary/addmode',
+        get_string('addmode', 'local_tituscontentlibrary'),
+        get_string('addmode_desc', 'local_tituscontentlibrary'),
+        \local_tituscontentlibrary\config::ADDMODE_ASYNC,
+        [
+            \local_tituscontentlibrary\config::ADDMODE_ASYNC => get_string('addmode:async', 'local_tituscontentlibrary'),
+            \local_tituscontentlibrary\config::ADDMODE_SYNC  => get_string('addmode:sync',  'local_tituscontentlibrary'),
+        ]
+    ));
+
+    // 7. Failure alert threshold.
+    $settings->add(new admin_setting_configtext(
+        'local_tituscontentlibrary/failurestreakthreshold',
+        get_string('failurestreakthreshold', 'local_tituscontentlibrary'),
+        get_string('failurestreakthreshold_desc', 'local_tituscontentlibrary'),
+        '3',
+        PARAM_INT
     ));
 }
