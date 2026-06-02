@@ -19,10 +19,12 @@ class provider implements
         $collection->add_database_table(
             'local_tituscontentlibrary_added',
             [
-                'userid'      => 'privacy:metadata:db:added:userid',
-                'contentid'   => 'privacy:metadata:db:added:contentid',
-                'courseid'    => 'privacy:metadata:db:added:courseid',
-                'timecreated' => 'privacy:metadata:db:added:timecreated',
+                'addedby'      => 'privacy:metadata:db:added:addedby',
+                'contentid'    => 'privacy:metadata:db:added:contentid',
+                'courseid'     => 'privacy:metadata:db:added:courseid',
+                'status'       => 'privacy:metadata:db:added:status',
+                'errormessage' => 'privacy:metadata:db:added:errormessage',
+                'timecreated'  => 'privacy:metadata:db:added:timecreated',
             ],
             'privacy:metadata:db:added'
         );
@@ -41,7 +43,7 @@ class provider implements
         $contextlist = new contextlist();
         $sql = "SELECT ctx.id
                   FROM {context} ctx
-                  JOIN {local_tituscontentlibrary_added} a ON a.userid = :userid
+                  JOIN {local_tituscontentlibrary_added} a ON a.addedby = :userid
                  WHERE ctx.contextlevel = :contextlevel";
         $contextlist->add_from_sql($sql, [
             'userid'       => $userid,
@@ -55,8 +57,8 @@ class provider implements
         if ($context->contextlevel !== CONTEXT_SYSTEM) {
             return;
         }
-        $sql = "SELECT DISTINCT userid FROM {local_tituscontentlibrary_added}";
-        $userlist->add_from_sql('userid', $sql, []);
+        $sql = "SELECT DISTINCT addedby FROM {local_tituscontentlibrary_added}";
+        $userlist->add_from_sql('addedby', $sql, []);
     }
 
     public static function export_user_data(approved_contextlist $contextlist): void {
@@ -66,7 +68,7 @@ class provider implements
                 continue;
             }
             $userid = $contextlist->get_user()->id;
-            $records = $DB->get_records('local_tituscontentlibrary_added', ['userid' => $userid]);
+            $records = $DB->get_records('local_tituscontentlibrary_added', ['addedby' => $userid]);
             $data = array_values(array_map(function($r) {
                 return (object)[
                     'contentid'   => $r->contentid,
@@ -90,7 +92,7 @@ class provider implements
         global $DB;
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel === CONTEXT_SYSTEM) {
-                $DB->delete_records('local_tituscontentlibrary_added', ['userid' => $contextlist->get_user()->id]);
+                $DB->delete_records('local_tituscontentlibrary_added', ['addedby' => $contextlist->get_user()->id]);
             }
         }
     }
@@ -102,6 +104,6 @@ class provider implements
             return;
         }
         [$insql, $inparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
-        $DB->delete_records_select('local_tituscontentlibrary_added', "userid $insql", $inparams);
+        $DB->delete_records_select('local_tituscontentlibrary_added', "addedby $insql", $inparams);
     }
 }

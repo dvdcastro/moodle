@@ -28,11 +28,13 @@ defined('MOODLE_INTERNAL') || die();
 final class signed_url_dto {
 
     /**
-     * @param string $url        The signed download URL.
-     * @param int    $expires_in Number of seconds until the URL expires.
+     * @param string $url        The signed download URL (S3 amazonaws.com).
+     * @param string $filename   Suggested filename for the downloaded SCORM package.
+     * @param int    $expires_in Number of seconds until the URL expires (always 300).
      */
     public function __construct(
         public readonly string $url,
+        public readonly string $filename,
         public readonly int    $expires_in,
     ) {}
 }

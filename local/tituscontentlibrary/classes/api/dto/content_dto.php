@@ -38,6 +38,9 @@ final class content_dto {
         public readonly int    $duration_minutes,
         public readonly bool   $is_featured,
         public readonly bool   $is_new,
+        public readonly string $subcategory = '',
+        public readonly string $version = '1.0.0',
+        public readonly ?int   $updated_at = null,
     ) {}
 
     /**
@@ -56,13 +59,18 @@ final class content_dto {
             short_description: clean_param($a['short_description'] ?? '', PARAM_TEXT),
             thumbnail_url:     clean_param($a['thumbnail_url'] ?? '', PARAM_URL),
             category:          clean_param($a['category'] ?? '', PARAM_TEXT),
+            subcategory:       clean_param($a['subcategory'] ?? '', PARAM_TEXT),
             tags:              array_values(array_map(
                 fn($t) => clean_param((string)$t, PARAM_TEXT),
                 (array)($a['tags'] ?? [])
             )),
             duration_minutes:  (int)($a['duration_minutes'] ?? 0),
+            version:           clean_param($a['version'] ?? '1.0.0', PARAM_TEXT),
             is_featured:       (bool)($a['is_featured'] ?? false),
             is_new:            (bool)($a['is_new'] ?? false),
+            updated_at:        isset($a['updated_at']) ? (
+                is_numeric($a['updated_at']) ? (int)$a['updated_at'] : (strtotime($a['updated_at']) ?: null)
+            ) : null,
         );
     }
 }

@@ -1,0 +1,30 @@
+{{!
+    @template local_tituscontentlibrary/category_pills
+    Category filter pill buttons for the Titus marketplace.
+    These are WAI-ARIA Toggle buttons (aria-pressed) — they filter the same grid
+    in place and are NOT tabs (no panel switching). See DEVELOPER.md §5 for why.
+    Example context (json):
+    {
+        "allactive": true,
+        "categories": [
+            {"id": "leadership", "name": "Leadership", "isactive": false},
+            {"id": "technology", "name": "Technology", "isactive": false}
+        ]
+    }
+}}
+<button type="button"
+        aria-pressed="{{allactive}}"
+        data-action="filter-category"
+        data-category-id=""
+        class="btn btn-outline-secondary mr-1 titus-category-btn{{#allactive}} active{{/allactive}}">
+    {{#str}}allcategories, local_tituscontentlibrary{{/str}}
+</button>
+{{#categories}}
+<button type="button"
+        aria-pressed="{{isactive}}"
+        data-action="filter-category"
+        data-category-id="{{id}}"
+        class="btn btn-outline-secondary mr-1 titus-category-btn{{#isactive}} active{{/isactive}}">
+    {{name}}
+</button>
+{{/categories}}

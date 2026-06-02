@@ -1,0 +1,277 @@
+// Titus Content Library — brand variables.
+// MLFR-271/272: white text on the original brand pink (#F40067) is only ~4.16:1,
+// below the WCAG AA 4.5:1 threshold for normal text. Use a darkened pink for button
+// fills/borders so white labels pass AA, while keeping the brand pink for focus
+// outlines (non-text, governed by the 3:1 non-text rule).
+$titus-pink:        #F40067;          // brand accent — focus rings, decorative use.
+$titus-pink-btn:    #C00050;          // AA-compliant fill for white-on-pink buttons (~4.9:1).
+$titus-pink-darker: #A30043;          // hover/active — darker still.
+$titus-success:     #1e7e34;          // AA-compliant green for the "Added" state (~4.9:1).
+$titus-touch-min:   44px;
+
+.path-local-tituscontentlibrary {
+
+    .titus-marketplace {
+        padding: 1rem 0;
+    }
+
+    // -------------------------------------------------------------------------
+    // Responsive grid — explicit px breakpoints (no Bootstrap vars).
+    // -------------------------------------------------------------------------
+    .titus-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+
+    .titus-tile {
+        display: flex;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        box-sizing: border-box;
+    }
+
+    // MLFR-280: 1 / 2 / 3 / 4 columns (xs / sm / md / lg+). Previously the grid went
+    // to 5 columns at xl which made tiles over-dense; cap at 4 (25%) from lg upward.
+    @media (max-width: 575.98px) {
+        .titus-tile { flex: 0 0 100%; max-width: 100%; }
+    }
+    @media (min-width: 576px) {
+        .titus-tile { flex: 0 0 50%; max-width: 50%; }
+    }
+    @media (min-width: 768px) {
+        .titus-tile { flex: 0 0 33.3333%; max-width: 33.3333%; }
+    }
+    @media (min-width: 992px) {
+        .titus-tile { flex: 0 0 25%; max-width: 25%; }
+    }
+
+    // -------------------------------------------------------------------------
+    // Touch targets (WCAG 2.5.5 — min 44×44 px).
+    // -------------------------------------------------------------------------
+    .titus-add-btn,
+    .titus-category-btn,
+    .titus-search-clear {
+        min-height: $titus-touch-min;
+        min-width: $titus-touch-min;
+    }
+
+    // -------------------------------------------------------------------------
+    // Brand primary button (Titus pink).
+    // -------------------------------------------------------------------------
+    .titus-add-btn {
+        background-color: $titus-pink-btn;
+        border-color: $titus-pink-btn;
+        color: #fff;
+
+        &:hover,
+        &:focus {
+            background-color: $titus-pink-darker;
+            border-color: $titus-pink-darker;
+            color: #fff;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Focus visible outlines — pink, consistent across interactive elements.
+    // -------------------------------------------------------------------------
+    .titus-add-btn:focus,
+    .titus-category-btn:focus,
+    .titus-search-clear:focus,
+    #titus-search-input:focus {
+        outline: 2px solid $titus-pink;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+
+    // -------------------------------------------------------------------------
+    // Tile state modifier classes.
+    // -------------------------------------------------------------------------
+    .titus-tile--loading {
+        opacity: 0.7;
+        cursor: wait;
+        pointer-events: none;
+    }
+
+    .titus-tile--queued .titus-add-btn {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .titus-tile--added .titus-add-btn {
+        background-color: $titus-success;
+        border-color: $titus-success;
+        color: #fff;
+        cursor: default;
+    }
+
+    .titus-tile--error .card {
+        border-color: #dc3545;
+    }
+
+    // -------------------------------------------------------------------------
+    // Category pills bar — horizontally scrollable with fade gradient.
+    // -------------------------------------------------------------------------
+    .titus-categories {
+        position: relative;
+        overflow-x: auto;
+        white-space: nowrap;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+
+        &::before,
+        &::after {
+            content: "";
+            position: sticky;
+            top: 0;
+            width: 24px;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        &::before {
+            left: 0;
+            background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+        }
+
+        &::after {
+            right: 0;
+            background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0));
+        }
+
+        .titus-category-btn {
+            scroll-snap-align: start;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Skeleton shimmer animation.
+    // -------------------------------------------------------------------------
+    .titus-tile--skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: titus-shimmer 1.5s infinite;
+        height: 280px;
+        border-radius: 4px;
+    }
+
+    @keyframes titus-shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    // -------------------------------------------------------------------------
+    // Content badges — Featured (gold gradient) and New (blue).
+    // -------------------------------------------------------------------------
+    .titus-badge--featured {
+        background: linear-gradient(135deg, #f6c130, #e8a000);
+        color: #3d2600;
+        border: none;
+    }
+
+    .titus-badge--new {
+        background-color: #0d6efd;
+        color: #fff;
+        border: none;
+    }
+
+    // -------------------------------------------------------------------------
+    // Tile presentation — thumbnail, category chip, title clamp, duration chip.
+    // -------------------------------------------------------------------------
+    .titus-tile-thumb {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        background-color: #f0f0f0;
+    }
+
+    // MLFR-277: placeholder shown when a tile has no thumbnail URL — grey panel
+    // with a centred icon rather than a blank/broken-image gap.
+    .titus-tile-thumb--placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e9ecef;
+        color: #adb5bd;
+
+        .fa {
+            font-size: 2.5rem;
+        }
+    }
+
+    .titus-tile-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        align-items: center;
+    }
+
+    .titus-category-badge {
+        background-color: #6c757d;
+        color: #fff;
+        border: none;
+    }
+
+    .titus-tile-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .titus-duration-badge {
+        background-color: #e9ecef;
+        color: #495057;
+        font-weight: 400;
+
+        .fa {
+            margin-right: 0.15rem;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Empty state.
+    // -------------------------------------------------------------------------
+    .titus-empty {
+        width: 100%;
+    }
+
+    // -------------------------------------------------------------------------
+    // Detail modal body.
+    // -------------------------------------------------------------------------
+    .titus-detail-thumbnail {
+        width: 100%;
+        height: auto;
+        max-height: 360px;
+        object-fit: cover;
+    }
+
+    .titus-detail-description {
+        white-space: pre-line;
+    }
+
+    .titus-manage-thumb {
+        width: 80px;
+        height: auto;
+        border-radius: 4px;
+    }
+
+    // -------------------------------------------------------------------------
+    // Reduced motion — respect prefers-reduced-motion.
+    // -------------------------------------------------------------------------
+    @media (prefers-reduced-motion: reduce) {
+        .titus-tile--skeleton {
+            animation: none;
+            background: #f0f0f0;
+        }
+
+        * {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+}

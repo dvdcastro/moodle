@@ -29,6 +29,7 @@ class titus_auth_exception extends titus_api_exception {
 
     public function __construct(string $message, int $http_code = 0, ?\Throwable $previous = null) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        \moodle_exception::__construct('error:apiauthfailed', 'local_tituscontentlibrary', '', null, $detail);
+        // 'error:apiauthfailed' has no {$a}; keep $detail as debuginfo for the logs.
+        \moodle_exception::__construct('error:apiauthfailed', 'local_tituscontentlibrary', '', null, $detail . ($previous ? ' | ' . $previous->getMessage() : ''));
     }
 }

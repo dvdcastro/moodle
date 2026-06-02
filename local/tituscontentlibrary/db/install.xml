@@ -8,8 +8,9 @@
         <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
         <FIELD NAME="contentid"    TYPE="char" LENGTH="64" NOTNULL="true"  SEQUENCE="false"/>
         <FIELD NAME="courseid"     TYPE="int"  LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="scormcmid"    TYPE="int"  LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="userid"       TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="false"/>
+        <FIELD NAME="cmid"         TYPE="int"  LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="scormid"      TYPE="int"  LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="addedby"      TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="false"/>
         <FIELD NAME="status"       TYPE="char" LENGTH="20" NOTNULL="true"  DEFAULT="completed" SEQUENCE="false"/>
         <FIELD NAME="errormessage" TYPE="text"             NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10" NOTNULL="true"  SEQUENCE="false"/>
@@ -18,11 +19,12 @@
       <KEYS>
         <KEY NAME="primary"          TYPE="primary" FIELDS="id"/>
         <KEY NAME="contentid_uniq"   TYPE="unique"  FIELDS="contentid"/>
-        <KEY NAME="fk_userid"        TYPE="foreign" FIELDS="userid"   REFTABLE="user"   REFFIELDS="id"/>
+        <KEY NAME="fk_addedby"       TYPE="foreign" FIELDS="addedby"  REFTABLE="user"   REFFIELDS="id"/>
         <KEY NAME="fk_courseid"      TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="status_ix"   UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="courseid_ix" UNIQUE="false" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

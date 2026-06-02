@@ -1,0 +1,97 @@
+{{!
+    @template local_tituscontentlibrary/marketplace
+    Main Titus Content Library marketplace page.
+    Example context (json):
+    {
+        "contents": [
+            {"id":"sim-001","title":"Demo","shortdescription":"Desc","thumbnailurl":"https://example.com/thumb.jpg","category":"Technology","durationminutes":30,"isfeatured":false,"isnew":true,"isadded":false,"isloading":false,"isqueued":false,"haserror":false,"errormessage":""}
+        ],
+        "categories": [{"id":"technology","name":"Technology","isactive":false}],
+        "allactive": true,
+        "emptystate": false,
+        "emptystatecontext": {"nocatalogue":false,"stalecache":false,"nosearchresults":false,"nocategorymatch":false},
+        "errorstate": false,
+        "stale": false
+    }
+}}
+<div role="main"
+     aria-labelledby="titus-marketplace-heading"
+     class="titus-marketplace path-local-tituscontentlibrary"
+     data-region="titus-marketplace"
+     data-tiles-per-page="{{tilesperpage}}">
+
+    <h2 id="titus-marketplace-heading">{{#str}}catalogue, local_tituscontentlibrary{{/str}}</h2>
+
+    {{#stale}}
+    <div class="alert alert-warning" role="alert">
+        {{#str}}warning:cataloguestale, local_tituscontentlibrary{{/str}}
+    </div>
+    {{/stale}}
+
+    {{#errorstate}}
+    <div class="alert alert-danger" role="alert">
+        {{#str}}error:cataloguenotavailable, local_tituscontentlibrary{{/str}}
+    </div>
+    {{/errorstate}}
+
+    <div class="sr-only" role="status" aria-live="polite" data-region="titus-announcer"></div>
+
+    <div class="titus-toolbar d-flex flex-wrap align-items-center mb-3">
+        <div class="titus-sort d-flex align-items-center mr-auto">
+            <label class="mr-2 mb-0 text-nowrap" for="titus-sort-select">{{#str}}sortby, local_tituscontentlibrary{{/str}}</label>
+            <select id="titus-sort-select"
+                    class="form-control form-control-sm w-auto"
+                    data-region="titus-sort"
+                    data-sort-option="{{sortoption}}">
+                <option value="az">{{#str}}sort:az, local_tituscontentlibrary{{/str}}</option>
+                <option value="za">{{#str}}sort:za, local_tituscontentlibrary{{/str}}</option>
+                <option value="newest">{{#str}}sort:newest, local_tituscontentlibrary{{/str}}</option>
+                <option value="duration">{{#str}}sort:duration, local_tituscontentlibrary{{/str}}</option>
+                <option value="category">{{#str}}sort:category, local_tituscontentlibrary{{/str}}</option>
+                <option value="featured">{{#str}}sort:featured, local_tituscontentlibrary{{/str}}</option>
+                <option value="new">{{#str}}sort:new, local_tituscontentlibrary{{/str}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="titus-search d-flex mb-3">
+        <label class="sr-only" for="titus-search-input">{{#str}}search, core{{/str}}</label>
+        <input type="search"
+               id="titus-search-input"
+               data-region="titus-search-input"
+               class="form-control"
+               placeholder="{{#str}}search, core{{/str}}" />
+        <button type="button"
+                class="btn btn-link titus-search-clear ml-2"
+                data-action="clear-search"
+                hidden>
+            {{#str}}clearsearch, local_tituscontentlibrary{{/str}}
+        </button>
+    </div>
+
+    <nav aria-label="{{#str}}filterbycategory, local_tituscontentlibrary{{/str}}"
+         class="titus-categories mb-3"
+         data-region="titus-categories">
+        {{> local_tituscontentlibrary/category_pills }}
+    </nav>
+
+    <div data-region="titus-empty-state">
+        {{#emptystatecontext}}
+        {{> local_tituscontentlibrary/empty_state }}
+        {{/emptystatecontext}}
+    </div>
+
+    {{^emptystate}}
+    <div role="list" class="titus-grid row" data-region="titus-grid">
+        {{#contents}}
+        {{> local_tituscontentlibrary/tile }}
+        {{/contents}}
+    </div>
+    {{/emptystate}}
+
+</div>
+{{#js}}
+require(['local_tituscontentlibrary/marketplace'], function(m) {
+    m.init('[data-region="titus-marketplace"]');
+});
+{{/js}}

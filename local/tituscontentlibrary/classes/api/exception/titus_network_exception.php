@@ -29,6 +29,7 @@ class titus_network_exception extends titus_api_exception {
 
     public function __construct(string $message, int $http_code = 0, ?\Throwable $previous = null) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        \moodle_exception::__construct('error:apinetwork', 'local_tituscontentlibrary', '', null, $detail);
+        // Pass $detail as $a so the {$a} placeholder in 'error:apinetwork' is interpolated.
+        \moodle_exception::__construct('error:apinetwork', 'local_tituscontentlibrary', '', $detail, $previous ? $previous->getMessage() : null);
     }
 }

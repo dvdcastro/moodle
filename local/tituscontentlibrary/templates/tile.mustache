@@ -1,0 +1,122 @@
+{{!
+    @template local_tituscontentlibrary/tile
+    Single content tile for the Titus marketplace grid.
+    Example context (json):
+    {
+        "id": "sim-001",
+        "title": "Demo Leadership Course",
+        "shortdescription": "An introduction to leadership principles.",
+        "thumbnailurl": "https://example.com/thumb.jpg",
+        "category": "Leadership",
+        "durationminutes": 30,
+        "isfeatured": true,
+        "isnew": false,
+        "isadded": false,
+        "isloading": false,
+        "isqueued": false,
+        "haserror": false,
+        "errormessage": ""
+    }
+}}
+<article role="listitem"
+         class="titus-tile col-12 col-sm-6 col-md-4 col-lg-3 mb-4{{#isadded}} titus-tile--added{{/isadded}}{{#isloading}} titus-tile--loading{{/isloading}}{{#isqueued}} titus-tile--queued{{/isqueued}}{{#haserror}} titus-tile--error{{/haserror}}"
+         data-content-id="{{id}}"
+         data-region="titus-tile"
+         data-category-id="{{category}}"
+         data-description="{{description}}"
+         data-version="{{version}}"
+         data-updatedat="{{updatedat}}"
+         data-tags="{{#tags}}{{.}}|{{/tags}}"
+         data-isfeatured="{{#isfeatured}}1{{/isfeatured}}{{^isfeatured}}0{{/isfeatured}}"
+         data-isnew="{{#isnew}}1{{/isnew}}{{^isnew}}0{{/isnew}}"
+         data-duration-minutes="{{durationminutes}}"
+         data-published-at="{{publishedat}}"
+         >
+    <div class="card h-100 w-100">
+        {{#thumbnailurl}}
+        <img class="card-img-top titus-tile-thumb"
+             src="{{thumbnailurl}}"
+             alt="{{title}}"
+             loading="lazy" />
+        {{/thumbnailurl}}
+        {{^thumbnailurl}}
+        {{! MLFR-277: render a styled placeholder instead of a blank gap when no thumbnail URL. }}
+        <div class="card-img-top titus-tile-thumb titus-tile-thumb--placeholder" aria-hidden="true">
+            <i class="fa fa-image" aria-hidden="true"></i>
+        </div>
+        {{/thumbnailurl}}
+        <div class="card-body d-flex flex-column">
+            <div class="titus-tile-badges mb-1">
+                {{#isnew}}<span class="badge titus-badge--new">{{#str}}badge:new, local_tituscontentlibrary{{/str}}</span>{{/isnew}}
+                {{#isfeatured}}<span class="badge titus-badge--featured">{{#str}}badge:featured, local_tituscontentlibrary{{/str}}</span>{{/isfeatured}}
+                {{#category}}<span class="badge badge-secondary titus-category-badge small">{{category}}</span>{{/category}}
+            </div>
+            <h3 class="card-title titus-tile-title h5">{{title}}</h3>
+            <p class="card-text small flex-grow-1">{{shortdescription}}</p>
+            <p class="text-muted small mb-1">
+                {{#durationminutes}}
+                <span class="badge badge-light titus-duration-badge">
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    {{durationminutes}} {{#str}}duration:minutes, local_tituscontentlibrary{{/str}}
+                </span>
+                &nbsp;|&nbsp;
+                {{/durationminutes}}
+                <button type="button"
+                        class="btn btn-link btn-sm p-0 titus-detail-trigger"
+                        data-action="open-detail"
+                        aria-label="{{#str}}detail:viewdetails, local_tituscontentlibrary{{/str}} — {{title}}">
+                    {{#str}}detail:viewdetails, local_tituscontentlibrary{{/str}}
+                </button>
+            </p>
+            <div data-region="tile-action">
+                {{#isadded}}
+                <span class="btn btn-success btn-sm w-100 titus-add-btn" disabled>
+                    {{#str}}added, local_tituscontentlibrary{{/str}}
+                </span>
+                {{#courseurl}}
+                <a href="{{courseurl}}" class="btn btn-sm btn-outline-secondary titus-view-btn w-100 mt-1" target="_blank">
+                    {{#str}}viewcourse, local_tituscontentlibrary{{/str}}
+                </a>
+                {{/courseurl}}
+                {{/isadded}}
+                {{^isadded}}
+                {{#isloading}}
+                <button type="button"
+                        class="btn btn-secondary btn-sm w-100 titus-add-btn"
+                        aria-busy="true"
+                        disabled>
+                    {{#str}}adding, local_tituscontentlibrary{{/str}}
+                </button>
+                {{/isloading}}
+                {{#isqueued}}
+                <button type="button"
+                        class="btn btn-secondary btn-sm w-100 titus-add-btn"
+                        disabled>
+                    {{#str}}queued, local_tituscontentlibrary{{/str}}
+                </button>
+                {{/isqueued}}
+                {{^isloading}}{{^isqueued}}
+                <button type="button"
+                        class="btn btn-primary btn-sm w-100 titus-add-btn"
+                        data-content-id="{{id}}"
+                        data-action="add"
+                        aria-label="{{#str}}aria:addtomoodle, local_tituscontentlibrary, {{title}}{{/str}}">
+                    {{#str}}addtomoodle, local_tituscontentlibrary{{/str}}
+                </button>
+                {{/isqueued}}{{/isloading}}
+                {{/isadded}}
+            </div>
+            {{#haserror}}
+            <div class="alert alert-danger small mt-2 mb-2" role="alert" data-region="tile-error">
+                {{errormessage}}
+            </div>
+            <button type="button"
+                    class="btn btn-sm btn-warning titus-add-btn w-100"
+                    data-action="add"
+                    data-content-id="{{id}}">
+                {{#str}}retry, local_tituscontentlibrary{{/str}}
+            </button>
+            {{/haserror}}
+        </div>
+    </div>
+</article>

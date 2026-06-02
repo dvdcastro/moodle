@@ -1,0 +1,48 @@
+{{!
+    @template local_tituscontentlibrary/empty_state
+    Empty-state variants for the Titus marketplace.
+    Exactly one of the four boolean flags should be true.
+    Example context (json):
+    {
+        "nocatalogue": false,
+        "stalecache": false,
+        "nosearchresults": true,
+        "nocategorymatch": false
+    }
+}}
+{{#nocatalogue}}
+<div class="titus-empty text-center py-4">
+    <p class="text-muted">{{#str}}error:cataloguenotavailable, local_tituscontentlibrary{{/str}}</p>
+    <button type="button"
+            class="btn btn-secondary"
+            data-action="retry-catalogue">
+        {{#str}}retry, local_tituscontentlibrary{{/str}}
+    </button>
+</div>
+{{/nocatalogue}}
+{{#stalecache}}
+<div class="titus-empty text-center py-4">
+    <p class="text-muted">{{#str}}warning:cataloguestale, local_tituscontentlibrary{{/str}}</p>
+</div>
+{{/stalecache}}
+{{#nosearchresults}}
+<div class="titus-empty text-center py-4">
+    <p class="text-muted">{{#str}}emptysearch, local_tituscontentlibrary{{/str}}</p>
+    <button type="button"
+            class="btn btn-link"
+            data-action="clear-search">
+        {{#str}}clearsearch, local_tituscontentlibrary{{/str}}
+    </button>
+</div>
+{{/nosearchresults}}
+{{#nocategorymatch}}
+<div class="titus-empty text-center py-4">
+    <p class="text-muted">{{#str}}emptycategory, local_tituscontentlibrary{{/str}}</p>
+    <button type="button"
+            class="btn btn-link"
+            data-action="filter-category"
+            data-category-id="">
+        {{#str}}showall, local_tituscontentlibrary{{/str}}
+    </button>
+</div>
+{{/nocategorymatch}}

@@ -1,0 +1,78 @@
+{{!
+    @template local_tituscontentlibrary/detail_modal
+    Body content for the Titus content detail modal.
+    Example context (json):
+    {
+        "id": "sim-001",
+        "title": "Demo Leadership Course",
+        "description": "A comprehensive introduction to leadership principles.",
+        "shortdescription": "An introduction to leadership principles.",
+        "thumbnailurl": "https://example.com/thumb.jpg",
+        "category": "Leadership",
+        "tags": ["leadership", "management"],
+        "durationminutes": 30,
+        "isfeatured": true,
+        "isnew": false,
+        "publishedat": null,
+        "isadded": false
+    }
+}}
+<div class="titus-detail-modal">
+    {{#thumbnailurl}}
+    <img class="titus-detail-thumbnail img-fluid mb-3"
+         src="{{thumbnailurl}}"
+         alt="{{title}}"
+         loading="lazy" />
+    {{/thumbnailurl}}
+
+    <div class="titus-detail-meta mb-3">
+        {{#category}}
+        <span class="badge badge-secondary mr-1">{{category}}</span>
+        {{/category}}
+        {{#isfeatured}}<span class="badge titus-badge--featured mr-1">{{#str}}badge:featured, local_tituscontentlibrary{{/str}}</span>{{/isfeatured}}
+        {{#isnew}}<span class="badge titus-badge--new mr-1">{{#str}}badge:new, local_tituscontentlibrary{{/str}}</span>{{/isnew}}
+        {{#durationminutes}}
+        <span class="text-muted small ml-1">{{durationminutes}} min</span>
+        {{/durationminutes}}
+    </div>
+
+    {{#description}}
+    <p class="titus-detail-description">{{description}}</p>
+    {{/description}}
+
+    {{#version}}
+    <p class="titus-modal-version"><strong>{{#str}}version, local_tituscontentlibrary{{/str}}:</strong> {{version}}</p>
+    {{/version}}
+    {{#updatedat}}
+    <p class="titus-modal-updated"><strong>{{#str}}lastupdated, local_tituscontentlibrary{{/str}}:</strong> {{updatedat}}</p>
+    {{/updatedat}}
+
+    {{#tags.length}}
+    <div class="titus-detail-tags mt-2">
+        {{#tags}}<span class="badge badge-light mr-1">{{.}}</span>{{/tags}}
+    </div>
+    {{/tags.length}}
+
+    <div class="titus-detail-action mt-3" data-region="titus-detail-action" data-content-id="{{id}}">
+        {{#isadded}}
+        <span class="btn btn-success btn-sm titus-add-btn" aria-disabled="true">
+            {{#str}}added, local_tituscontentlibrary{{/str}}
+        </span>
+        {{! MLFR-269: already-added items show View Course instead of an Add button. }}
+        {{#courseurl}}
+        <a href="{{courseurl}}" class="btn btn-outline-secondary btn-sm titus-view-btn ml-1" target="_blank">
+            {{#str}}viewcourse, local_tituscontentlibrary{{/str}}
+        </a>
+        {{/courseurl}}
+        {{/isadded}}
+        {{^isadded}}
+        <button type="button"
+                class="btn btn-primary btn-sm titus-add-btn"
+                data-action="add"
+                data-content-id="{{id}}"
+                aria-label="{{#str}}aria:addtomoodle, local_tituscontentlibrary, {{title}}{{/str}}">
+            {{#str}}addtomoodle, local_tituscontentlibrary{{/str}}
+        </button>
+        {{/isadded}}
+    </div>
+</div>

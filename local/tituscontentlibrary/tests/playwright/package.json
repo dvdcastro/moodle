@@ -1,0 +1,13 @@
+{
+  "name": "tituscontentlibrary-playwright-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright E2E tests for local_tituscontentlibrary",
+  "scripts": {
+    "test": "playwright test --reporter=list",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.0"
+  }
+}

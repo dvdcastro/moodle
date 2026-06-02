@@ -42,6 +42,7 @@ class titus_rate_limit_exception extends titus_api_exception {
         ?\Throwable $previous = null,
     ) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        \moodle_exception::__construct('error:apiratelimit', 'local_tituscontentlibrary', '', null, $detail);
+        // 'error:apiratelimit' expects the retry-after seconds as {$a}.
+        \moodle_exception::__construct('error:apiratelimit', 'local_tituscontentlibrary', '', $retry_after, $detail);
     }
 }

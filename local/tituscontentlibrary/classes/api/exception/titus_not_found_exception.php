@@ -29,6 +29,7 @@ class titus_not_found_exception extends titus_api_exception {
 
     public function __construct(string $message, int $http_code = 404, ?\Throwable $previous = null) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        \moodle_exception::__construct('error:apinotfound', 'local_tituscontentlibrary', '', null, $detail);
+        // Pass $detail as $a so the {$a} placeholder in 'error:apinotfound' is interpolated.
+        \moodle_exception::__construct('error:apinotfound', 'local_tituscontentlibrary', '', $detail, $previous ? $previous->getMessage() : null);
     }
 }

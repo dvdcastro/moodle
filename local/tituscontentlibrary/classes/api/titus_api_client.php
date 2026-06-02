@@ -18,11 +18,19 @@ namespace local_tituscontentlibrary\api;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+// download_file_content() lives in filelib.php — required explicitly so that the
+// client works from CLI / scheduled-task / adhoc-task contexts where the file is
+// not preloaded by the web stack.
+require_once($CFG->libdir . '/filelib.php');
+
 use local_tituscontentlibrary\config;
+use local_tituscontentlibrary\local\log_sanitizer;
 use local_tituscontentlibrary\api\dto\content_dto;
 use local_tituscontentlibrary\api\dto\signed_url_dto;
 use local_tituscontentlibrary\api\exception\titus_api_exception;
 use local_tituscontentlibrary\api\exception\titus_auth_exception;
+use local_tituscontentlibrary\api\exception\titus_forbidden_exception;
 use local_tituscontentlibrary\api\exception\titus_not_found_exception;
 use local_tituscontentlibrary\api\exception\titus_rate_limit_exception;
 use local_tituscontentlibrary\api\exception\titus_server_exception;
@@ -65,7 +73,7 @@ class titus_api_client implements titus_api_client_interface {
      * @return content_dto[]
      */
     public function get_catalogue(array $filters = []): array {
-        $url = $this->baseurl . '/catalogue.php';
+        $url = $this->baseurl . '/catalogue';
         if (!empty($filters)) {
             $url .= '?' . http_build_query($filters);
         }
@@ -73,9 +81,9 @@ class titus_api_client implements titus_api_client_interface {
         $body = $this->do_get($url);
         $data = $this->decode_json($body, $url);
 
-        // The simulator wraps items in {"results":[...]}; raw array also accepted.
-        $items = isset($data['results']) && is_array($data['results'])
-            ? $data['results']
+        // API response per the brief: {"tier": "...", "content": [...]}
+        $items = isset($data['content']) && is_array($data['content'])
+            ? $data['content']
             : $data;
 
         return array_map([content_dto::class, 'from_array'], $items);
@@ -88,14 +96,15 @@ class titus_api_client implements titus_api_client_interface {
      * @return signed_url_dto
      */
     public function get_signed_download_url(string $content_id): signed_url_dto {
-        $url  = $this->baseurl . '/download.php';
+        $url  = $this->baseurl . '/download';
         $body = json_encode(['content_id' => $content_id]);
 
         $response = $this->do_post($url, $body);
         $data     = $this->decode_json($response, $url);
 
         return new signed_url_dto(
-            url:        $data['download_url'] ?? '',
+            url:        $data['url'] ?? '',
+            filename:   $data['filename'] ?? '',
             expires_in: (int)($data['expires_in'] ?? 300),
         );
     }
@@ -111,6 +120,13 @@ class titus_api_client implements titus_api_client_interface {
      * @return void
      */
     public function download_to(string $url, string $destpath): void {
+        // Allow HTTP download URLs only when the configured API base URL is also HTTP
+        // (e.g. local dev/staging environments). Production must always use HTTPS.
+        $base_scheme = parse_url($this->baseurl, PHP_URL_SCHEME);
+        $url_scheme  = parse_url($url, PHP_URL_SCHEME);
+        if ($url_scheme !== 'https' && $base_scheme === 'https') {
+            throw new titus_security_exception('Download URL must use HTTPS: ' . $url);
+        }
         $this->validate_download_url($url);
 
         make_writable_directory(dirname($destpath));
@@ -139,7 +155,8 @@ class titus_api_client implements titus_api_client_interface {
      */
     public function health(): bool {
         try {
-            $url = $this->baseurl . '/health.php';
+            // No /health endpoint in the Titus API — use a lightweight catalogue probe instead.
+            $url = $this->baseurl . '/catalogue?per_page=1';
             $this->do_get($url);
             return true;
         } catch (\Throwable $e) {
@@ -163,7 +180,11 @@ class titus_api_client implements titus_api_client_interface {
      * @throws titus_server_exception   On HTTP 5xx.
      */
     private function do_get(string $url): string {
-        $headers = ['X-Licence-Key: ' . $this->licencekey];
+        global $CFG;
+        $headers = [
+            'X-Licence-Key: ' . $this->licencekey,
+            'X-Site-URL: ' . $CFG->wwwroot,
+        ];
 
         $result = download_file_content($url, $headers, null, true);
 
@@ -178,8 +199,10 @@ class titus_api_client implements titus_api_client_interface {
      * @return string Response body.
      */
     private function do_post(string $url, string $body): string {
+        global $CFG;
         $headers = [
             'X-Licence-Key: ' . $this->licencekey,
+            'X-Site-URL: ' . $CFG->wwwroot,
             'Content-Type: application/json',
         ];
 
@@ -200,18 +223,23 @@ class titus_api_client implements titus_api_client_interface {
     private function process_response($result, string $url): string {
         // cURL-level failure: $result can be false or have status 0/-100.
         if ($result === false) {
-            throw new titus_network_exception('Request failed (cURL error): ' . $url);
+            throw new titus_network_exception(log_sanitizer::sanitize('Request failed (cURL error): ' . $url));
         }
 
         $status = (int)$result->status;
 
         if ($status === 0 || $status === -100) {
             $error = $result->error ?? 'Unknown network error';
-            throw new titus_network_exception("$error — $url");
+            throw new titus_network_exception(log_sanitizer::sanitize("$error — $url"));
         }
 
-        if ($status === 401 || $status === 403) {
+        if ($status === 401) {
             throw new titus_auth_exception('Unauthorised', $status);
+        }
+
+        if ($status === 403) {
+            // 403 = authenticated but not permitted (e.g. content not in tier — brief §6.2).
+            throw new titus_forbidden_exception('Forbidden', $status);
         }
 
         if ($status === 404) {

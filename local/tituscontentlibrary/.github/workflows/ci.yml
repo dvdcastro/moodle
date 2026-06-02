@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - MOODLE_405_STABLE
+      - MOODLE_404_STABLE
+  pull_request:
+    branches:
+      - main
+      - MOODLE_405_STABLE
+
+jobs:
+  ci:
+    uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
+    with:
+      extra_plugin_runners: ''
+      disable_behat: false
+      disable_phplint: false
+      disable_phpunit: false
+      disable_grunt: false
+      disable_phpcpd: false
+      disable_codechecker: false
+      moodle_branches: '["MOODLE_405_STABLE"]'
+      php_versions: '["8.1", "8.2", "8.3"]'
+      database: mariadb

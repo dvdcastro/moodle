@@ -34,6 +34,7 @@ class titus_api_exception extends \moodle_exception {
      */
     public function __construct(string $message, int $http_code = 0, ?\Throwable $previous = null) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        parent::__construct('error:apifailure', 'local_tituscontentlibrary', '', null, $detail);
+        // Pass $detail as $a so the {$a} placeholder in 'error:apifailure' is interpolated.
+        parent::__construct('error:apifailure', 'local_tituscontentlibrary', '', $detail, $previous ? $previous->getMessage() : null);
     }
 }

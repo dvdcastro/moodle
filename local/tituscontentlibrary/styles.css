@@ -1,0 +1,203 @@
+.path-local-tituscontentlibrary .titus-marketplace {
+  padding: 1rem 0;
+}
+.path-local-tituscontentlibrary .titus-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+.path-local-tituscontentlibrary .titus-tile {
+  display: flex;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  box-sizing: border-box;
+}
+@media (max-width: 575.98px) {
+  .path-local-tituscontentlibrary .titus-tile {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+@media (min-width: 576px) {
+  .path-local-tituscontentlibrary .titus-tile {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+@media (min-width: 768px) {
+  .path-local-tituscontentlibrary .titus-tile {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+  }
+}
+@media (min-width: 992px) {
+  .path-local-tituscontentlibrary .titus-tile {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+}
+.path-local-tituscontentlibrary .titus-add-btn,
+.path-local-tituscontentlibrary .titus-category-btn,
+.path-local-tituscontentlibrary .titus-search-clear {
+  min-height: 44px;
+  min-width: 44px;
+}
+.path-local-tituscontentlibrary .titus-add-btn {
+  background-color: #C00050;
+  border-color: #C00050;
+  color: #fff;
+}
+.path-local-tituscontentlibrary .titus-add-btn:hover, .path-local-tituscontentlibrary .titus-add-btn:focus {
+  background-color: #A30043;
+  border-color: #A30043;
+  color: #fff;
+}
+.path-local-tituscontentlibrary .titus-add-btn:focus,
+.path-local-tituscontentlibrary .titus-category-btn:focus,
+.path-local-tituscontentlibrary .titus-search-clear:focus,
+.path-local-tituscontentlibrary #titus-search-input:focus {
+  outline: 2px solid #F40067;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.path-local-tituscontentlibrary .titus-tile--loading {
+  opacity: 0.7;
+  cursor: wait;
+  pointer-events: none;
+}
+.path-local-tituscontentlibrary .titus-tile--queued .titus-add-btn {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+.path-local-tituscontentlibrary .titus-tile--added .titus-add-btn {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
+  color: #fff;
+  cursor: default;
+}
+.path-local-tituscontentlibrary .titus-tile--error .card {
+  border-color: #dc3545;
+}
+.path-local-tituscontentlibrary .titus-categories {
+  position: relative;
+  overflow-x: auto;
+  white-space: nowrap;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.path-local-tituscontentlibrary .titus-categories::before, .path-local-tituscontentlibrary .titus-categories::after {
+  content: "";
+  position: sticky;
+  top: 0;
+  width: 24px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.path-local-tituscontentlibrary .titus-categories::before {
+  left: 0;
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+}
+.path-local-tituscontentlibrary .titus-categories::after {
+  right: 0;
+  background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0));
+}
+.path-local-tituscontentlibrary .titus-categories .titus-category-btn {
+  scroll-snap-align: start;
+}
+.path-local-tituscontentlibrary .titus-tile--skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: titus-shimmer 1.5s infinite;
+  height: 280px;
+  border-radius: 4px;
+}
+@keyframes titus-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+.path-local-tituscontentlibrary .titus-badge--featured {
+  background: linear-gradient(135deg, #f6c130, #e8a000);
+  color: #3d2600;
+  border: none;
+}
+.path-local-tituscontentlibrary .titus-badge--new {
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+}
+.path-local-tituscontentlibrary .titus-tile-thumb {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+.path-local-tituscontentlibrary .titus-tile-thumb--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9ecef;
+  color: #adb5bd;
+}
+.path-local-tituscontentlibrary .titus-tile-thumb--placeholder .fa {
+  font-size: 2.5rem;
+}
+.path-local-tituscontentlibrary .titus-tile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+.path-local-tituscontentlibrary .titus-category-badge {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+}
+.path-local-tituscontentlibrary .titus-tile-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.path-local-tituscontentlibrary .titus-duration-badge {
+  background-color: #e9ecef;
+  color: #495057;
+  font-weight: 400;
+}
+.path-local-tituscontentlibrary .titus-duration-badge .fa {
+  margin-right: 0.15rem;
+}
+.path-local-tituscontentlibrary .titus-empty {
+  width: 100%;
+}
+.path-local-tituscontentlibrary .titus-detail-thumbnail {
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: cover;
+}
+.path-local-tituscontentlibrary .titus-detail-description {
+  white-space: pre-line;
+}
+.path-local-tituscontentlibrary .titus-manage-thumb {
+  width: 80px;
+  height: auto;
+  border-radius: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .path-local-tituscontentlibrary .titus-tile--skeleton {
+    animation: none;
+    background: #f0f0f0;
+  }
+  .path-local-tituscontentlibrary * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

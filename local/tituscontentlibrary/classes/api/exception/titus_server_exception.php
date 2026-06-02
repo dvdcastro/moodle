@@ -29,6 +29,7 @@ class titus_server_exception extends titus_api_exception {
 
     public function __construct(string $message, int $http_code = 0, ?\Throwable $previous = null) {
         $detail = $message . ($http_code ? " (HTTP $http_code)" : '');
-        \moodle_exception::__construct('error:apiserver', 'local_tituscontentlibrary', '', null, $detail);
+        // Pass $detail as $a so the {$a} placeholder in 'error:apiserver' is interpolated.
+        \moodle_exception::__construct('error:apiserver', 'local_tituscontentlibrary', '', $detail, $previous ? $previous->getMessage() : null);
     }
 }
