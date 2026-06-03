@@ -61,12 +61,14 @@ if ($hassiteconfig) {
     ));
 
     // 2. Licence key (stored encrypted, required — must not be empty on first save).
+    // The setting validates the key against the Titus API at write time and blocks
+    // the save with an inline error if it is rejected (MLFR-225); no updatedcallback
+    // is needed because validation happens inside write_setting().
     $licencekeysetting = new \local_tituscontentlibrary\admin\setting_encryptedpassword_required(
         'local_tituscontentlibrary/licencekey',
         get_string('licencekey', 'local_tituscontentlibrary'),
         get_string('licencekey_desc', 'local_tituscontentlibrary')
     );
-    $licencekeysetting->set_updatedcallback('local_tituscontentlibrary_validate_connexion');
     $settings->add($licencekeysetting);
 
     // 3. Default course category.

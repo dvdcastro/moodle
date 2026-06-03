@@ -147,7 +147,7 @@ $string['failurestreakthreshold']      = 'Failure alert threshold';
 $string['failurestreakthreshold_desc'] = 'Send an admin notification after this many consecutive catalogue refresh failures (default: 3).';
 $string['messageprovider:refreshfailure'] = 'Titus catalogue refresh failure notifications';
 
-// Settings connection test feedback (lib.php validate_connexion callback).
+// Settings licence-key validation feedback (setting_encryptedpassword_required::write_setting, MLFR-225).
 $string['connexion:ok']          = 'Titus API connection verified successfully.';
 $string['connexion:invalid_key'] = 'Titus API returned 401/403 — check your licence key.';
 $string['connexion:unreachable'] = 'Could not verify the Titus API connection (network error or unreachable). The licence key was saved.';

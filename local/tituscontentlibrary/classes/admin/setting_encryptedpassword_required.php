@@ -39,7 +39,14 @@ defined('MOODLE_INTERNAL') || die();
 class setting_encryptedpassword_required extends \admin_setting_encryptedpassword {
 
     /**
-     * Write the setting, rejecting an empty value when none is stored yet.
+     * Write the setting, enforcing the required constraint and validating the
+     * licence key against the Titus API before accepting it (MLFR-225).
+     *
+     * A rejected key (HTTP 401/403) is rolled back and reported as an inline error
+     * string, which Moodle renders on the settings form without persisting the bad
+     * value — no full error page. A network/unreachable error does NOT block the
+     * save (brief §5.1); it is saved and a warning is shown. A verified key is
+     * saved and a success notice is shown.
      *
      * @param string $data Submitted value.
      * @return string Empty string on success, error message on failure.
@@ -54,6 +61,39 @@ class setting_encryptedpassword_required extends \admin_setting_encryptedpasswor
             return get_string('licencekey:required', 'local_tituscontentlibrary');
         }
 
-        return parent::write_setting($data);
+        // Write-only field: an empty submission with a value already stored leaves
+        // the existing key untouched (core behaviour) and needs no re-validation.
+        if ($data === '') {
+            return parent::write_setting($data);
+        }
+
+        // Persist the candidate first so the API client (which reads the stored key)
+        // probes with the new value; capture the previous value to roll back on
+        // rejection.
+        $previous = get_config('local_tituscontentlibrary', 'licencekey');
+        $error    = parent::write_setting($data);
+        if ($error !== '') {
+            return $error;
+        }
+
+        $status = \local_tituscontentlibrary\local\connexion_validator::probe();
+
+        if ($status === \local_tituscontentlibrary\local\connexion_validator::INVALID) {
+            // Roll back the rejected key and block the save with an inline error.
+            if ($previous === false) {
+                unset_config('licencekey', 'local_tituscontentlibrary');
+            } else {
+                set_config('licencekey', $previous, 'local_tituscontentlibrary');
+            }
+            return get_string('connexion:invalid_key', 'local_tituscontentlibrary');
+        }
+
+        if ($status === \local_tituscontentlibrary\local\connexion_validator::UNREACHABLE) {
+            \core\notification::warning(get_string('connexion:unreachable', 'local_tituscontentlibrary'));
+        } else {
+            \core\notification::success(get_string('connexion:ok', 'local_tituscontentlibrary'));
+        }
+
+        return '';
     }
 }
