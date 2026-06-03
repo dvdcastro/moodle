@@ -38,6 +38,10 @@ class add_course_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         client_factory::set_test_client(null);
+        // The plugin default add mode is now sync (decision D1). These tests assert
+        // async queueing semantics, so pin async here; the sync-mode tests below
+        // override this with set_config('addmode', 'sync', ...).
+        set_config('addmode', 'async', 'local_tituscontentlibrary');
     }
 
     protected function tearDown(): void {

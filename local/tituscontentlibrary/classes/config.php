@@ -83,19 +83,20 @@ class config {
         return (int) get_config('local_tituscontentlibrary', 'defaultcategoryid') ?: 1;
     }
 
-    /** Add mode: background adhoc task (default). */
+    /** Add mode: background adhoc task. */
     const ADDMODE_ASYNC = 'async';
 
-    /** Add mode: synchronous — blocks the web request until the course is created. */
+    /** Add mode: synchronous — blocks the web request until the course is created (default). */
     const ADDMODE_SYNC = 'sync';
 
     /**
-     * Returns the configured add mode ('async' or 'sync'). Defaults to async.
+     * Returns the configured add mode ('async' or 'sync'). Defaults to sync (decision D1, 2026-06-03):
+     * the brief §5.4 specifies a synchronous add; async stays available as an opt-in for large packages.
      *
      * @return string One of the ADDMODE_* constants.
      */
     public static function get_add_mode(): string {
         $v = get_config('local_tituscontentlibrary', 'addmode');
-        return $v === self::ADDMODE_SYNC ? self::ADDMODE_SYNC : self::ADDMODE_ASYNC;
+        return $v === self::ADDMODE_ASYNC ? self::ADDMODE_ASYNC : self::ADDMODE_SYNC;
     }
 }

@@ -99,7 +99,7 @@ if ($hassiteconfig) {
         'local_tituscontentlibrary/addmode',
         get_string('addmode', 'local_tituscontentlibrary'),
         get_string('addmode_desc', 'local_tituscontentlibrary'),
-        \local_tituscontentlibrary\config::ADDMODE_ASYNC,
+        \local_tituscontentlibrary\config::ADDMODE_SYNC,
         [
             \local_tituscontentlibrary\config::ADDMODE_ASYNC => get_string('addmode:async', 'local_tituscontentlibrary'),
             \local_tituscontentlibrary\config::ADDMODE_SYNC  => get_string('addmode:sync',  'local_tituscontentlibrary'),

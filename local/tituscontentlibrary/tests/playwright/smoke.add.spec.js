@@ -27,6 +27,11 @@ const waitForMarketplace = async (page) => {
 
 test.describe('Titus Content Library — add flow (smoke, sync mode)', () => {
   test('add first available tile -> completed -> course has a SCORM activity', async ({ page }) => {
+    // MLFR-321: capture uncaught JS errors so we can assert the sync success
+    // handler does not throw "Cannot read properties of undefined".
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message || String(err)));
+
     await page.goto(MARKETPLACE_URL);
     await waitForMarketplace(page);
 
@@ -48,19 +53,29 @@ test.describe('Titus Content Library — add flow (smoke, sync mode)', () => {
     // 2) Click "Add to Moodle".
     await addButton.click();
 
-    // 3) The tile should reach COMPLETED ("View course" link). In sync mode the
-    //    whole import runs inline in the WS request (download via ngrok + SCORM
-    //    validation), which can be slow; the in-page transition may lag. We wait
-    //    for the live transition first, and if it does not surface in time we
-    //    reload — the tile then renders from DB-backed state as "Added" +
-    //    "View course" (TESTING.md Part 3.4). Either path proves completion.
-    const viewLink = actionRegion.locator('a.titus-view-btn');
-    try {
-      await expect(viewLink).toBeVisible({ timeout: 80_000 });
-    } catch {
-      await page.goto(MARKETPLACE_URL);
-      await waitForMarketplace(page);
-    }
+    // 3) MLFR-321: in sync mode the whole import runs inline in the WS request
+    //    (download via ngrok + SCORM validation), which can be slow. On success the
+    //    LIVE handler must move the tile to the Added state (View course link)
+    //    without throwing a JS error or surfacing a false error banner. We race the
+    //    success signal against the error signal so a false-error regression fails
+    //    the test instead of being masked by a page reload.
+    const viewLink    = actionRegion.locator('a.titus-view-btn');
+    const errorBanner = page.locator(`[data-content-id="${contentId}"] [data-region="tile-error"]`);
+
+    const outcome = await Promise.race([
+      viewLink.waitFor({ state: 'visible', timeout: 90_000 }).then(() => 'completed'),
+      errorBanner.waitFor({ state: 'visible', timeout: 90_000 }).then(() => 'failed'),
+    ]).catch(() => 'timeout');
+
+    // MLFR-321 acceptance: a successful sync add must NOT show a false error banner.
+    expect(outcome, 'sync add success handler must not show a false error banner (MLFR-321)')
+      .toBe('completed');
+    await expect(errorBanner, 'no error banner on a successful sync add (MLFR-321)').toBeHidden();
+
+    // MLFR-321 acceptance: no uncaught JS error (e.g. the reported TypeError) on the success path.
+    const typeErrors = pageErrors.filter((e) => /undefined|TypeError/i.test(String(e)));
+    expect(typeErrors, `no uncaught JS error on sync add success path (MLFR-321): ${typeErrors.join('; ')}`)
+      .toHaveLength(0);
 
     await expect(viewLink, 'tile should reach completed state with a View course link')
       .toBeVisible({ timeout: 30_000 });

@@ -3,7 +3,7 @@
 import Templates from 'core/templates';
 import Pending from 'core/pending';
 import {get_string as getString} from 'core/str';
-import Toast from 'core/toast';
+import {add as addToast} from 'core/toast';
 
 const STATES = {
     IDLE:       'IDLE',
@@ -122,7 +122,7 @@ const startPolling = (tile, contentid, title, announce, repository) => {
                 tile = await setState(tile, STATES.COMPLETED, {courseurl: status.course_url});
                 announce('announce:completed', title);
                 const successMsg = await getString('toast:added', 'local_tituscontentlibrary');
-                Toast.add(successMsg, {type: 'success'});
+                addToast(successMsg, {type: 'success'});
 
             } else if (status.status === 'failed') {
                 activePolls.delete(contentid);
@@ -181,7 +181,7 @@ const handleAdd = async(tile, announce, repository) => {
             tile = await setState(tile, STATES.COMPLETED, {courseurl: result.course_url || ''});
             announce('announce:completed', title);
             const successMsg = await getString('toast:added', 'local_tituscontentlibrary');
-            Toast.add(successMsg, {type: 'success'});
+            addToast(successMsg, {type: 'success'});
 
         } else if (result.status === 'failed') {
             tile.dataset.processing = '';

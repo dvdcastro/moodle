@@ -155,9 +155,9 @@ $string['licencekey:required']   = 'A Titus licence key is required.';
 
 // Add mode setting (MLFR-247).
 $string['addmode']       = 'Add mode';
-$string['addmode_desc']  = 'Synchronous mode blocks the browser request until the course is created and returns the course link immediately — suitable for small/fast packages only. Asynchronous mode (default) queues a background task and the tile polls for completion; it is safer for large packages and avoids web-server timeout risks.';
-$string['addmode:async'] = 'Asynchronous (background task, default)';
-$string['addmode:sync']  = 'Synchronous (blocks until done — small packages only)';
+$string['addmode_desc']  = 'Synchronous mode (default) blocks the browser request until the course is created and returns the course link immediately — matching the brief and suitable for small/fast packages. Asynchronous mode queues a background task and the tile polls for completion; it is safer for very large packages and avoids web-server timeout risks.';
+$string['addmode:async'] = 'Asynchronous (background task)';
+$string['addmode:sync']  = 'Synchronous (blocks until done, returns course link — default)';
 
 // Events (MLFR-220).
 $string['event:contentadded']           = 'Titus content added';
