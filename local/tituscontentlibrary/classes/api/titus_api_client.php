@@ -127,6 +127,20 @@ class titus_api_client implements titus_api_client_interface {
         if ($url_scheme !== 'https' && $base_scheme === 'https') {
             throw new titus_security_exception('Download URL must use HTTPS: ' . $url);
         }
+
+        // Dev-only loopback rewrite: a local API simulator may emit signed download
+        // URLs whose host is "localhost"/"127.0.0.1" (its own origin) even though
+        // this Moodle instance reaches the API via a different host (e.g.
+        // host.docker.internal). Inside a container "localhost" resolves to the
+        // container itself, so the download would both fail the trusted-host check
+        // and be unreachable. When the configured API base URL is itself a plain-HTTP
+        // dev endpoint, rewrite a loopback download host to the API base host:port so
+        // the file is fetched from the same place the catalogue came from. Production
+        // (HTTPS base, S3 download hosts) is never affected.
+        if ($base_scheme === 'http') {
+            $url = $this->rewrite_loopback_download_host($url);
+        }
+
         $this->validate_download_url($url);
 
         make_writable_directory(dirname($destpath));
@@ -283,6 +297,56 @@ class titus_api_client implements titus_api_client_interface {
         }
 
         return $data;
+    }
+
+    /**
+     * Rewrite a loopback download-URL host (localhost / 127.0.0.1 / ::1) to the
+     * configured API base URL's host and port.
+     *
+     * Only intended for local development against an API simulator that advertises
+     * its own origin as "localhost". The caller guarantees the configured base URL
+     * is plain HTTP before invoking this, so production S3/HTTPS URLs are untouched.
+     *
+     * @param string $url The signed download URL.
+     * @return string The (possibly) host-rewritten URL.
+     */
+    private function rewrite_loopback_download_host(string $url): string {
+        $downloadhost = parse_url($url, PHP_URL_HOST);
+        $loopback     = ['localhost', '127.0.0.1', '::1'];
+        if ($downloadhost === null || !in_array(strtolower($downloadhost), $loopback, true)) {
+            return $url;
+        }
+
+        $basehost = parse_url($this->baseurl, PHP_URL_HOST);
+        $baseport = parse_url($this->baseurl, PHP_URL_PORT);
+        if (empty($basehost)) {
+            return $url;
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return $url;
+        }
+        $parts['host'] = $basehost;
+        if (!empty($baseport)) {
+            $parts['port'] = $baseport;
+        } else {
+            unset($parts['port']);
+        }
+
+        $scheme = $parts['scheme'] ?? 'http';
+        $rebuilt = $scheme . '://' . $parts['host'];
+        if (!empty($parts['port'])) {
+            $rebuilt .= ':' . $parts['port'];
+        }
+        $rebuilt .= $parts['path'] ?? '';
+        if (isset($parts['query'])) {
+            $rebuilt .= '?' . $parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $rebuilt .= '#' . $parts['fragment'];
+        }
+        return $rebuilt;
     }
 
     /**
