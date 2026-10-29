@@ -35,6 +35,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * @copyright  2018 Matt Porritt <mattp@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversMethod(\core\task\asynchronous_restore_task::class, 'execute')]
 final class async_restore_test extends \advanced_testcase {
 
     /**
@@ -242,5 +243,88 @@ final class async_restore_test extends \advanced_testcase {
 
         // Execute adhoc task.
         $asynctask->execute();
+    }
+
+    /**
+     * Tests an asynchronous restore whose plan throws while executing (MDL-81511).
+     *
+     * The exception must be logged and the controller marked as failed, instead of the
+     * task dying on memory exhaustion while checksumming the half-executed plan.
+     *
+     */
+    public function test_async_restore_exception_during_execution(): void {
+        global $CFG, $USER, $DB;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $generator->create_module('forum', ['course' => $course->id]);
+
+        // Backup the course.
+        $bc = new backup_controller(
+            backup::TYPE_1COURSE,
+            $course->id,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            $USER->id
+        );
+        $bc->execute_plan();
+        $backupfile = $bc->get_results()['backup_destination'];
+        $bc->destroy();
+
+        // Extract backup file.
+        $backupdir = "restore_" . uniqid();
+        $path = $CFG->tempdir . DIRECTORY_SEPARATOR . "backup" . DIRECTORY_SEPARATOR . $backupdir;
+        $fp = get_file_packer('application/vnd.moodle.backup');
+        $fp->extract_to_pathname($backupfile, $path);
+
+        // Create the restore controller.
+        $newcourseid = restore_dbops::create_new_course(
+            $course->fullname,
+            $course->shortname . '_2',
+            $course->category
+        );
+        $rc = new restore_controller(
+            $backupdir,
+            $newcourseid,
+            backup::INTERACTIVE_NO,
+            backup::MODE_ASYNC,
+            $USER->id,
+            backup::TARGET_NEW_COURSE
+        );
+        $this->assertTrue($rc->execute_precheck());
+        $restoreid = $rc->get_restoreid();
+        $rc->destroy();
+
+        // Break the extracted backup so that a step throws once the plan is executing.
+        unlink($path . DIRECTORY_SEPARATOR . 'course' . DIRECTORY_SEPARATOR . 'course.xml');
+
+        $asynctask = new \core\task\asynchronous_restore_task();
+        $asynctask->set_custom_data(['backupid' => $restoreid]);
+        $asynctask->set_userid($USER->id);
+        \core\task\manager::queue_adhoc_task($asynctask);
+
+        $task = \core\task\manager::get_next_adhoc_task(time());
+        $this->assertInstanceOf('\\core\\task\\asynchronous_restore_task', $task);
+        ob_start();
+        $task->execute();
+        $output = ob_get_clean();
+        \core\task\manager::adhoc_task_complete($task);
+        // The failed plan leaves its temp tables behind.
+        \restore_controller_dbops::drop_restore_temp_tables($restoreid);
+
+        // The original exception is logged.
+        $this->assertStringContainsString('Exception thrown during restore execution, marking job as failed.', $output);
+        $this->assertStringContainsString('restore_step_exception', $output);
+        $this->assertStringContainsString('course/course.xml', $output);
+
+        // And the controller is marked as failed.
+        $this->assertEquals(
+            backup::STATUS_FINISHED_ERR,
+            $DB->get_field('backup_controllers', 'status', ['backupid' => $restoreid])
+        );
     }
 }
