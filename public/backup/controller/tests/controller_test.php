@@ -44,6 +44,8 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  */
 #[\PHPUnit\Framework\Attributes\CoversMethod(\restore_controller::class, 'get_copy')]
 #[\PHPUnit\Framework\Attributes\CoversMethod(\restore_controller::class, '__construct')]
+#[\PHPUnit\Framework\Attributes\CoversMethod(\backup_controller::class, 'set_status')]
+#[\PHPUnit\Framework\Attributes\CoversMethod(\restore_controller::class, 'set_status')]
 final class controller_test extends \advanced_testcase {
 
     protected $moduleid;  // course_modules id used for testing
@@ -219,6 +221,91 @@ final class controller_test extends \advanced_testcase {
             backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $this->userid,
             backup::TARGET_EXISTING_ADDING);
         $rc->prepare_copy();
+    }
+
+    /**
+     * Test a backup failing during execution can be marked as failed (MDL-81511).
+     *
+     */
+    public function test_backup_controller_set_status_error_while_executing(): void {
+        global $DB;
+
+        $bc = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $this->moduleid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_ASYNC,
+            $this->userid
+        );
+        $backupid = $bc->get_backupid();
+
+        // Reproduce the state of an execution failing in its first task: tasks are built
+        // lazily once executing, so their steps now reference the task back.
+        $bc->set_status(backup::STATUS_EXECUTING);
+        $task = $bc->get_plan()->get_tasks()[0];
+        $task->build();
+        $this->assertNotEmpty($task->get_steps());
+
+        $bc->set_status(backup::STATUS_FINISHED_ERR);
+
+        $this->assertEquals(
+            backup::STATUS_FINISHED_ERR,
+            $DB->get_field('backup_controllers', 'status', ['backupid' => $backupid])
+        );
+        // The controller was saved and still loads (its checksum matches).
+        $this->assertInstanceOf(backup_controller::class, backup_controller::load_controller($backupid));
+        $bc->destroy();
+    }
+
+    /**
+     * Test a restore failing during execution can be marked as failed (MDL-81511).
+     *
+     */
+    public function test_restore_controller_set_status_error_while_executing(): void {
+        global $DB;
+
+        // Make a backup.
+        make_backup_temp_directory('');
+        $bc = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $this->moduleid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $this->userid
+        );
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+
+        $rc = new restore_controller(
+            $backupid,
+            $this->courseid,
+            backup::INTERACTIVE_NO,
+            backup::MODE_ASYNC,
+            $this->userid,
+            backup::TARGET_EXISTING_ADDING
+        );
+        $this->assertTrue($rc->execute_precheck(true));
+        $restoreid = $rc->get_restoreid();
+
+        // Reproduce the state of an execution failing in its first task: tasks are built
+        // lazily once executing, so their steps now reference the task back.
+        $rc->set_status(backup::STATUS_EXECUTING);
+        $task = $rc->get_plan()->get_tasks()[0];
+        $task->build();
+        $this->assertNotEmpty($task->get_steps());
+
+        $rc->set_status(backup::STATUS_FINISHED_ERR);
+
+        $this->assertEquals(
+            backup::STATUS_FINISHED_ERR,
+            $DB->get_field('backup_controllers', 'status', ['backupid' => $restoreid])
+        );
+        // The controller was saved and still loads (its checksum matches).
+        $this->assertInstanceOf(restore_controller::class, restore_controller::load_controller($restoreid));
+        $rc->destroy();
     }
 
     /**

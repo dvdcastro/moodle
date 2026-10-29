@@ -93,10 +93,12 @@ class asynchronous_restore_task extends adhoc_task {
             $duration = time() - $started;
             mtrace('Restore completed in: ' . $duration . ' seconds');
         } catch (\Exception $e) {
+            mtrace('Exception thrown during restore execution, marking job as failed.');
+            mtrace(get_class($e) . ':');
+            mtrace_exception($e);
+
             // If an exception is thrown, mark the restore as failed.
             $rc->set_status(\backup::STATUS_FINISHED_ERR);
-            mtrace('Exception thrown during restore execution, marking job as failed.');
-            mtrace($e->getMessage());
         } finally {
             // Cleanup.
             // Always destroy the controller.
