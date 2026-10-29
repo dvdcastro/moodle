@@ -1729,9 +1729,9 @@ abstract class restore_dbops {
                 self::set_backup_ids_record($restoreid, 'user', $recuser->itemid, $usercheck->id);
 
             } else if ($usercheck === false) { // Found conflict, report it as problem
-                if (!get_config('backup', 'import_general_duplicate_admin_allowed')) {
+                if (!get_config('backup', 'import_general_duplicate_admin_allowed') || $user->username !== 'admin') {
                     $problems[] = get_string('restoreuserconflict', '', $user->username);
-                } else if ($user->username == 'admin') {
+                } else {
                     if (!$cancreateuser) {
                         $problems[] = get_string('restorecannotcreateuser', '', $user->username);
                     }
