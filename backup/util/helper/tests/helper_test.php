@@ -46,4 +46,53 @@ final class helper_test extends \basic_testcase {
      */
     function test_backup_general_helper(): void {
     }
+
+    /**
+     * Test array_checksum_recursive() walks arrays and stdClass objects only.
+     *
+     * @covers \backup_general_helper::array_checksum_recursive
+     */
+    public function test_array_checksum_recursive(): void {
+        $checksum = \backup_general_helper::array_checksum_recursive(['a' => 1, 'b' => [2, 3]]);
+        $this->assertEquals(32, strlen($checksum));
+        $this->assertEquals($checksum, \backup_general_helper::array_checksum_recursive(['a' => 1, 'b' => [2, 3]]));
+        $this->assertNotEquals($checksum, \backup_general_helper::array_checksum_recursive(['a' => 1, 'b' => [2, 4]]));
+
+        // The contents of stdClass objects are part of the checksum.
+        $this->assertNotEquals(
+            \backup_general_helper::array_checksum_recursive([(object) ['x' => 1]]),
+            \backup_general_helper::array_checksum_recursive([(object) ['x' => 2]])
+        );
+
+        // Other non-checksumable objects are identified by their class only.
+        $this->assertEquals(
+            \backup_general_helper::array_checksum_recursive([new \ArrayObject([1])]),
+            \backup_general_helper::array_checksum_recursive([new \ArrayObject([2])])
+        );
+        $this->assertNotEquals(
+            \backup_general_helper::array_checksum_recursive([new \ArrayObject([1])]),
+            \backup_general_helper::array_checksum_recursive([new \ArrayIterator([1])])
+        );
+    }
+
+    /**
+     * Test array_checksum_recursive() does not recurse endlessly on a step to task back-reference (MDL-81511).
+     *
+     * @covers \backup_general_helper::array_checksum_recursive
+     */
+    public function test_array_checksum_recursive_step_task_cycle(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+        require_once($CFG->dirroot . '/backup/util/plan/tests/fixtures/plan_fixtures.php');
+
+        // Once built, a task holds its steps and every step holds a reference back to its task.
+        $task = new \mock_backup_task_basepath('taskname');
+        $task->add_step(new \mock_backup_step('stepname'));
+        $this->assertCount(1, $task->get_steps());
+
+        $checksum = \backup_general_helper::array_checksum_recursive([$task]);
+        $this->assertEquals(32, strlen($checksum));
+        $this->assertEquals($checksum, \backup_general_helper::array_checksum_recursive([$task]));
+        $this->assertTrue($task->is_checksum_correct($task->calculate_checksum()));
+    }
 }
